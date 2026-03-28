@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://cbdrg68p01q0q" path="res://assets/sprites/world_tileset.png" id="2_yqjtg"]
 [ext_resource type="PackedScene" uid="uid://de21k4wfxkqkt" path="res://scenes/coin.tscn" id="4_lbhrr"]
 [ext_resource type="PackedScene" uid="uid://d3crnqbqtarla" path="res://scenes/kill_zone.tscn" id="5_iywne"]
+[ext_resource type="PackedScene" uid="uid://cyuudukpus280" path="res://scenes/enemy.tscn" id="6_p57ef"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_lnu2h"]
 texture = ExtResource("2_yqjtg")
@@ -330,3 +331,6 @@ position = Vector2(923, 343)
 [node name="AnimationPlayer" type="AnimationPlayer" parent="PlatformGreen" unique_id=110806026]
 libraries/ = SubResource("AnimationLibrary_u5sy4")
 autoplay = &"new_animation"
+
+[node name="Enemy" parent="." unique_id=1495337220 instance=ExtResource("6_p57ef")]
+position = Vector2(464, 261)
