@@ -1,0 +1,120 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        default: 'v0.0.1'
+
+env:
+  GODOT_VERSION: "4.4.1"
+  GAME_NAME: "Platformer1"
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ env.GODOT_VERSION }}
+          use-dotnet: false
+          include-templates: true
+
+      - name: Verify Godot
+        run: godot --version
+
+      - name: Setup export presets
+        run: |
+          cp release/export_presets.cfg .
+
+      - name: Import project
+        run: |
+          godot --headless --import
+        timeout-minutes: 5
+
+      - name: Create build directories
+        run: |
+          mkdir -p build/linux-arm64
+          mkdir -p build/linux-arm32
+          mkdir -p build/linux-x64
+
+      - name: Export Linux ARM64 (Raspberry Pi)
+        run: |
+          godot --headless --export-release "Linux ARM64 (Raspberry Pi)" build/linux-arm64/${{ env.GAME_NAME }}.arm64
+        timeout-minutes: 10
+
+      - name: Export Linux ARM32 (Raspberry Pi)
+        run: |
+          godot --headless --export-release "Linux ARM32 (Raspberry Pi)" build/linux-arm32/${{ env.GAME_NAME }}.arm32
+        timeout-minutes: 10
+
+      - name: Export Linux x86_64
+        run: |
+          godot --headless --export-release "Linux x86_64" build/linux-x64/${{ env.GAME_NAME }}.x86_64
+        timeout-minutes: 10
+
+      - name: Make executables runnable
+        run: |
+          chmod +x build/linux-arm64/${{ env.GAME_NAME }}.arm64 || true
+          chmod +x build/linux-arm32/${{ env.GAME_NAME }}.arm32 || true
+          chmod +x build/linux-x64/${{ env.GAME_NAME }}.x86_64 || true
+
+      - name: Create release archives
+        run: |
+          cd build/linux-arm64 && zip -r ../../${{ env.GAME_NAME }}-linux-arm64.zip . && cd ../..
+          cd build/linux-arm32 && zip -r ../../${{ env.GAME_NAME }}-linux-arm32.zip . && cd ../..
+          cd build/linux-x64 && zip -r ../../${{ env.GAME_NAME }}-linux-x64.zip . && cd ../..
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## Platformer1 ${{ steps.version.outputs.version }}
+
+            ### Downloads
+            - **Linux ARM64** (Raspberry Pi 3/4/5): `${{ env.GAME_NAME }}-linux-arm64.zip`
+            - **Linux ARM32** (Older Raspberry Pi): `${{ env.GAME_NAME }}-linux-arm32.zip`
+            - **Linux x86_64** (PC): `${{ env.GAME_NAME }}-linux-x64.zip`
+
+            ### Recalbox Installation
+            1. Download the ARM64 or ARM32 zip (depending on your Pi model)
+            2. Extract to your Recalbox ports folder
+            3. Make the binary executable: `chmod +x Platformer1.arm64`
+            4. Run the game
+          files: |
+            ${{ env.GAME_NAME }}-linux-arm64.zip
+            ${{ env.GAME_NAME }}-linux-arm32.zip
+            ${{ env.GAME_NAME }}-linux-x64.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-builds
+          path: |
+            *.zip
+          retention-days: 7
