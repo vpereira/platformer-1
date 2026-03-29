@@ -9,6 +9,10 @@ const JUMP_VELOCITY : float = -300.0
 var last_direction : float = 1.0
 
 
+func _ready() -> void:
+	add_to_group("player")
+
+
 func _physics_process(delta: float) -> void:
 	# Add the gravity.
 	if not is_on_floor():

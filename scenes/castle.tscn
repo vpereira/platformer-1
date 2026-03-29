@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://b0fmb5eimwy4q"]
+
+[ext_resource type="Texture2D" uid="uid://ds5dwkoedubfw" path="res://assets/sprites/castle.png" id="1_bly62"]
+[ext_resource type="Script" uid="uid://di63n7oyhc3km" path="res://scripts/castle.gd" id="2_castle"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0ysgy"]
+atlas = ExtResource("1_bly62")
+region = Rect2(0, 0, 66, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rjj26"]
+atlas = ExtResource("1_bly62")
+region = Rect2(67, 0, 66, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_jj81n"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0ysgy")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rjj26")
+}],
+"loop": true,
+"name": &"open_door",
+"speed": 5.0
+}]
+
+[sub_resource type="Animation" id="Animation_njhjj"]
+resource_name = "default"
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_jxdab"]
+_data = {
+&"default": SubResource("Animation_njhjj")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(14, 4)
+
+[node name="Castle" type="Node2D" unique_id=1396295847]
+script = ExtResource("2_castle")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1387781479]
+sprite_frames = SubResource("SpriteFrames_jj81n")
+autoplay = "default"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=421451102]
+libraries/ = SubResource("AnimationLibrary_jxdab")
+
+[node name="DoorArea" type="Area2D" parent="." unique_id=1364388559]
+position = Vector2(33, 47)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DoorArea" unique_id=869266500]
+position = Vector2(-34, -18)
+shape = SubResource("RectangleShape2D_door")
