@@ -1,6 +1,6 @@
 extends Area2D
 
 
-
-func _on_body_entered(body: Node2D) -> void:
+# if we need the variable, rename it to body again
+func _on_body_entered(_body: Node2D) -> void:
 	queue_free()
