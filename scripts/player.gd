@@ -21,6 +21,7 @@ var last_direction : float = 1.0
 var coyote_timer : float = 0.0
 var jump_buffer_timer : float = 0.0
 var was_on_floor : bool = false
+var is_ducking : bool = false
 
 
 func _ready() -> void:
@@ -59,8 +60,15 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_released("jump") and velocity.y < 0:
 		velocity.y *= VARIABLE_JUMP_MULTIPLIER
 
+	# Handle duck - only on ground
+	is_ducking = Input.is_action_pressed("duck") and on_floor
+
 	# Get input direction
 	var direction := Input.get_axis("move_left", "move_right")
+
+	# Stop movement while ducking
+	if is_ducking:
+		direction = 0
 
 	# Flip the sprite
 	if direction:
@@ -88,6 +96,8 @@ func _physics_process(delta: float) -> void:
 func _update_animation(direction: float) -> void:
 	if not is_on_floor():
 		animated_sprite_2d.play("jump")
+	elif is_ducking:
+		animated_sprite_2d.play("duck")
 	elif direction != 0 and direction != last_direction and last_direction != 0:
 		animated_sprite_2d.play("turn")
 	elif direction != 0:
